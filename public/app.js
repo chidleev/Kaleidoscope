@@ -50,8 +50,9 @@ function init() {
 
     let renderer, composer
     let VS = "", FS = ""
-    let dotsCount = 3
+    let dotsCount = Math.trunc(Math.random() * 10 + 3)
     let dotsData = []
+    let dotsColorsData = []
     
     function animationInit()
     {
@@ -73,17 +74,18 @@ function init() {
 
         for (let i = 0; i < dotsCount; i++) {
             dotsData.push(new THREE.Vector2(Math.sin(2*Math.PI * i/dotsCount), Math.cos(2*Math.PI * i/dotsCount)))
+            dotsColorsData.push(new THREE.Vector4(Math.random(), Math.random(), Math.random(), 1))
         }
-        console.log(dotsData)
 
         const shaderProgram = {
             uniforms: {
                 time: {value: 0},
                 XScale: {value: window.innerWidth/window.innerHeight},
                 offset: {value: new THREE.Vector2(0, 0)},
-                zoom: {value: 4},
+                zoom: {value: 0.1},
                 dots: {value: dotsData},
-                depth: {value: 25},
+                dotsColors: {value: dotsColorsData},
+                depth: {value: 10},
                 t: {value: 0}
             },
             vertexShader: VS,
@@ -98,7 +100,8 @@ function init() {
     function animation(time)
     {
         composer.passes[0].uniforms.time.value = time
-        composer.passes[0].uniforms.t.value = (1 + Math.cos(time/10000))/2
+        composer.passes[0].uniforms.zoom.value = 0.1 + 2 * (1 - Math.cos(time/20000))
+        composer.passes[0].uniforms.t.value = 0.75 - Math.cos(time/20000) / 4
         composer.render()
     }
 
