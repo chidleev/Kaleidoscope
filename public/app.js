@@ -65,12 +65,12 @@ function init() {
             antialias: true
         })
         renderer.setSize(window.innerWidth, window.innerHeight)
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        renderer.setPixelRatio(window.devicePixelRatio)
         renderer.setClearColor(0x202020)
 
         composer = new EffectComposer(renderer)
         composer.setSize(window.innerWidth, window.innerHeight)
-        composer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+        composer.setPixelRatio(window.devicePixelRatio)
 
         for (let i = 0; i < dotsCount; i++) {
             dotsData.push(new THREE.Vector2(Math.sin(2*Math.PI * i/dotsCount), Math.cos(2*Math.PI * i/dotsCount)))
@@ -80,7 +80,7 @@ function init() {
         const shaderProgram = {
             uniforms: {
                 time: {value: 0},
-                XScale: {value: window.innerWidth/window.innerHeight},
+                aspect: {value: window.innerWidth/window.innerHeight},
                 offset: {value: new THREE.Vector2(0, 0)},
                 zoom: {value: 0.1},
                 dots: {value: dotsData},

@@ -1,23 +1,17 @@
-struct Point {
-    vec2 position;
-    vec2 direction;
-
-    float criticalDistance;
-    float influence;
-
-    vec4 color;
-};
-
 #define PI 3.14159265359
 
-//set from app.js
-const int pointsCount = uniform int;
+const int dotsCount = uniform int; //set from app.js
 
-uniform Point points[pointsCount];
+uniform vec2 dots[dotsCount];
+uniform vec4 dotsColors[dotsCount];
 uniform float time;
-uniform int maxIterations;
+uniform float t;
+uniform int depth;
 
-varying vec2 pixelPosition;
+const float l = 2. * sin(PI/float(dotsCount));
+const float r = cos(PI/float(dotsCount));
+
+varying vec2 pixelPos;
 
 vec2 rotate(vec2 v, float a);
 float getDistance1(vec2 P, vec2 A, vec2 B);
@@ -26,30 +20,27 @@ float getDistance3(vec2 P, vec2 A, vec2 B);
 
 void main()
 {
-    vec4 criterionMask = vec4(0.);
-    vec4 iterationMask = vec4(0.);
+    vec4 mask = vec4(0.);
     vec4 resultColor = vec4(0.);
+    float parameters[dotsCount];
+    float conditions[dotsCount];
 
-    bool haveOneTruepoint = true;
-    int truepointsCount = 0;
+    for (int i = 0; i < dotsCount; i++) {
+        int id = (i + dotsCount/2) % dotsCount;
+        parameters[i] = getDistance2(pixelPos, dots[id], dots[(id + 1) % dotsCount]);
+        conditions[i] = t;
+    }
+
+    bool oneTrue = true;
     int iteration = 0;
-    
-    while (haveOneTruepoint && iteration < maxIterations) {
-        haveOneTruepoint = false;
+    float trueDotsCount = 0.;
 
-        for (int i = 0; i < pointsCount; i++) {
-            float distanceToPoint = distance(pixelPosition, points[i].position)
-
-            if (length(points[i].direction) > 0.) { //line
-
-            }
-            else { //point
-
-            }
-            
+    while (oneTrue && iteration < depth) {
+        oneTrue = false;
+        for (int i = 0; i < dotsCount; i++) {
             if (parameters[i] >= conditions[i]) {
                 conditions[i] += pow(t, float(iteration + 2));
-                mask += 1./float(pointsCount * depth);
+                mask += 1./float(dotsCount * depth);
                 //resultColor = (resultColor * trueDotsCount + dotsColors[i]) / (trueDotsCount + 1.);
                 oneTrue = true;
                 trueDotsCount++;
@@ -58,7 +49,6 @@ void main()
                 conditions[i] -= pow(t, float(iteration + 2));
             }
         }
-
         iteration++;
     }
 

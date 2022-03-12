@@ -1,12 +1,11 @@
-uniform float XScale;
+uniform float aspect;
 uniform vec2 offset;
 uniform float zoom;
 
-varying vec2 pixelPos;
+varying vec2 pixelPosition;
 
 void main()
 {
-    pixelPos = vec2(position.x * XScale, position.y) * zoom + offset;
-
+    pixelPosition = vec2(position.x * aspect, position.y) * zoom + offset;
     gl_Position = vec4(position, 1.0);
 }
