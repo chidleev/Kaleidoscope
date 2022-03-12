@@ -2,8 +2,10 @@ struct Point {
     vec2 position;
     vec2 direction;
 
-    float criticalDistance;
+    float distance;
     float influence;
+
+    bool mustBeCloser;
 
     vec4 color;
 };
@@ -20,60 +22,63 @@ uniform int maxIterations;
 varying vec2 pixelPosition;
 
 vec2 rotate(vec2 v, float a);
-float getDistance1(vec2 P, vec2 A, vec2 B);
+/*float getDistance1(vec2 P, vec2 A, vec2 B);
 float getDistance2(vec2 P, vec2 A, vec2 B);
-float getDistance3(vec2 P, vec2 A, vec2 B);
+float getDistance3(vec2 P, vec2 A, vec2 B);*/
 
 void main()
 {
-    vec4 criterionMask = vec4(0.);
-    vec4 iterationMask = vec4(0.);
     vec4 resultColor = vec4(0.);
 
-    bool haveOneTruepoint = true;
-    int truepointsCount = 0;
+    float criticalDistance[pointsCount];
+    for (int i = 0; i < pointsCount; i++) {
+        criticalDistance[i] = points[i].distance * points[i].influence;
+    }
+
+    bool haveOneTruePoint = true;
+    int truePointsCount = 0;
     int iteration = 0;
     
-    while (haveOneTruepoint && iteration < maxIterations) {
-        haveOneTruepoint = false;
-
+    while (haveOneTruePoint && iteration < maxIterations) {
+        haveOneTruePoint = false;
+        
         for (int i = 0; i < pointsCount; i++) {
-            float distanceToPoint = distance(pixelPosition, points[i].position)
-
-            if (length(points[i].direction) > 0.) { //line
-
+            if (length(points[i].direction) > 0.) { //like line
+                float distanceToPoint = distance(pixelPosition, points[i].position);
             }
-            else { //point
-
-            }
-            
-            if (parameters[i] >= conditions[i]) {
-                conditions[i] += pow(t, float(iteration + 2));
-                mask += 1./float(pointsCount * depth);
-                //resultColor = (resultColor * trueDotsCount + dotsColors[i]) / (trueDotsCount + 1.);
-                oneTrue = true;
-                trueDotsCount++;
-            }
-            else {
-                conditions[i] -= pow(t, float(iteration + 2));
+            else { //like point
+                float distanceToPoint = distance(pixelPosition, points[i].position);
+                if (distanceToPoint >= criticalDistance[i]) {
+                    if (!points[i].mustBeCloser) {
+                        haveOneTruePoint = true;
+                        truePointsCount++;
+                        resultColor += points[i].color;
+                    }
+                    criticalDistance[i] += criticalDistance[i] * pow(points[i].influence, float(iteration + 1));
+                }
+                else {
+                    if (points[i].mustBeCloser) {
+                        haveOneTruePoint = true;
+                        truePointsCount++;
+                        resultColor += points[i].color;
+                    }
+                    criticalDistance[i] -= criticalDistance[i] * pow(points[i].influence, float(iteration + 1));
+                }
             }
         }
 
         iteration++;
     }
 
-    for (int i = 0; i < dotsCount; i++) {
-        resultColor += dotsColors[i] * conditions[i] / float(dotsCount);
-    }
+    vec4 criterionMask = vec4(float(truePointsCount) / float(pointsCount * maxIterations));
+    vec4 iterationMask = vec4(float(iteration) / float(maxIterations));
+    resultColor /= float(truePointsCount);
 
-    //gl_FragColor = vec4(conditions[0], conditions[1], conditions[2], 1.) * (1. - mask) + vec4(1.) * mask;
-    //gl_FragColor = vec4(parameters[0], parameters[1], parameters[2], 1.);
-    //gl_FragColor = mask;
-    gl_FragColor = resultColor * (1.-mask);
-    //gl_FragColor = 1. - vec4(float(iteration)/float(depth));
+
+    gl_FragColor = resultColor * (1.-criterionMask);
 }
 
-float getDistance1(vec2 P, vec2 A, vec2 B) {
+/*float getDistance1(vec2 P, vec2 A, vec2 B) {
     return ((B.y - A.y) * P.x - (B.x - A.x) * P.y + B.x * A.y - B.y * A.x) / distance(A, B);
 }
 
@@ -87,7 +92,7 @@ float getDistance3(vec2 P, vec2 A, vec2 B) {
     vec2 N = normalize(B - A);
     vec2 C = dot(A - P, N) * N;
     return length(C - P);
-}
+}*/
 
 vec2 rotate(vec2 v, float a) {
 	float s = sin(a);

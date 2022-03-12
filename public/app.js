@@ -50,15 +50,14 @@ function init() {
 
     let renderer, composer
     let VS = "", FS = ""
-    let dotsCount = Math.trunc(Math.random() * 10 + 3)
-    let dotsData = []
-    let dotsColorsData = []
+    let pointsCount = Math.trunc((1 - Math.random()) * 7 + 3)
+    let points = []
     
     function animationInit()
     {
         VS = THREE.Cache.get("VS")
         FS = THREE.Cache.get("FS")
-        FS = FS.replace("const int dotsCount = uniform int;", `const int dotsCount = ${dotsCount};`)
+        FS = FS.replace("const int pointsCount = uniform int;", `const int pointsCount = ${pointsCount};`)
         
         renderer = new THREE.WebGLRenderer({
             canvas: document.getElementById('threejs'),
@@ -72,9 +71,15 @@ function init() {
         composer.setSize(window.innerWidth, window.innerHeight)
         composer.setPixelRatio(window.devicePixelRatio)
 
-        for (let i = 0; i < dotsCount; i++) {
-            dotsData.push(new THREE.Vector2(Math.sin(2*Math.PI * i/dotsCount), Math.cos(2*Math.PI * i/dotsCount)))
-            dotsColorsData.push(new THREE.Vector4(Math.random(), Math.random(), Math.random(), 1))
+        for (let i = 0; i < pointsCount; i++) {
+            points.push({
+                position: new THREE.Vector2(Math.sin(2*Math.PI * i/pointsCount), Math.cos(2*Math.PI * i/pointsCount)),
+                direction: new THREE.Vector2(0, 0),
+                distance: 0.7,
+                influence: 0.4,
+                mustBeCloser: false,
+                color: new THREE.Vector4(Math.random(), Math.random(), Math.random(), 1)
+            })
         }
 
         const shaderProgram = {
@@ -82,11 +87,9 @@ function init() {
                 time: {value: 0},
                 aspect: {value: window.innerWidth/window.innerHeight},
                 offset: {value: new THREE.Vector2(0, 0)},
-                zoom: {value: 0.1},
-                dots: {value: dotsData},
-                dotsColors: {value: dotsColorsData},
-                depth: {value: 10},
-                t: {value: 0}
+                zoom: {value: 1.5},
+                points: {value: points},
+                maxIterations: {value: 20}
             },
             vertexShader: VS,
             fragmentShader: FS
@@ -100,8 +103,10 @@ function init() {
     function animation(time)
     {
         composer.passes[0].uniforms.time.value = time
-        composer.passes[0].uniforms.zoom.value = 0.1 + 2 * (1 - Math.cos(time/20000))
-        composer.passes[0].uniforms.t.value = 0.75 - Math.cos(time/20000) / 4
+        composer.passes[0].uniforms.points.value.forEach(element => {
+            element.influence = Math.abs(Math.sin(time/50000))
+        });
+        //[0].influence = Math.abs(Math.cos(time/5000))
         composer.render()
     }
 
@@ -111,7 +116,7 @@ function init() {
 
     function resize()
     {
-        composer.passes[0].uniforms.XScale.value = window.innerWidth/window.innerHeight
+        composer.passes[0].uniforms.aspect.value = window.innerWidth/window.innerHeight
 
         composer.setSize(window.innerWidth, window.innerHeight)
         composer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
