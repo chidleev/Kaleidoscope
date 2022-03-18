@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -7,21 +7,19 @@
     <title>Fractal Kaleidoscope</title>
     <link rel="stylesheet" href="style.css">
     <script type="importmap">
-        {
-          "imports": {
+    {
+        "imports": {
             "three":"./build/three.module.js",
-            "OrbitControls":"./jsm/controls/OrbitControls.js",
-            "Stats":"./jsm/libs/stats.module.js",
-            "GUI":"./jsm/libs/dat.gui.module.js",
             "EffectComposer":"./jsm/postprocessing/EffectComposer.js",
-            "RenderPass":"./jsm/postprocessing/RenderPass.js",
             "ShaderPass":"./jsm/postprocessing/ShaderPass.js"
-          }
         }
+    }
     </script>
     <script type="module" src="app.js"></script>
 </head>
 <body>
-  <canvas id="threejs"></canvas>
+    <div id="menu-trigger"></div>
+    <div id="menu"></div>
+    <canvas id="threejs"></canvas>
 </body>
 </html>

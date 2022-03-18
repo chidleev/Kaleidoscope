@@ -5,6 +5,18 @@ import { ShaderPass } from 'ShaderPass'
 document.addEventListener('DOMContentLoaded', init())
 
 function init() {
+    class MenuManager {
+        constructor() {
+            this.HTMLElement = document.getElementById("menu")
+
+            this.lblInfluence = document.createElement('span')
+            this.lblInfluence.setAttribute('id', "influence")
+            this.HTMLElement.appendChild(this.lblInfluence)
+        }
+    } 
+    const menuManager = new MenuManager()
+
+
     THREE.Cache.enabled = true
     const shadersLoader = new THREE.FileLoader()
     shadersLoader.setResponseType("text")
@@ -47,7 +59,6 @@ function init() {
         )
     }
 
-
     let renderer, composer
     let VS = "", FS = ""
     let pointsCount = Math.trunc((1 - Math.random()) * 7 + 3)
@@ -73,10 +84,11 @@ function init() {
 
         for (let i = 0; i < pointsCount; i++) {
             points.push({
-                position: new THREE.Vector2(Math.sin(2*Math.PI * i/pointsCount), Math.cos(2*Math.PI * i/pointsCount)),
-                direction: new THREE.Vector2(0, 0),
-                distance: 0.7,
-                influence: 0.4,
+                type: 1,
+                position: new THREE.Vector2(Math.cos(2*Math.PI * i/pointsCount), Math.sin(2*Math.PI * i/pointsCount)),
+                direction: new THREE.Vector2(Math.cos(2*Math.PI * (i-1)/pointsCount), Math.sin(2*Math.PI * (i-1)/pointsCount)),
+                distance: 1,
+                influence: 0,
                 mustBeCloser: false,
                 color: new THREE.Vector4(Math.random(), Math.random(), Math.random(), 1)
             })
@@ -87,7 +99,7 @@ function init() {
                 time: {value: 0},
                 aspect: {value: window.innerWidth/window.innerHeight},
                 offset: {value: new THREE.Vector2(0, 0)},
-                zoom: {value: 1.5},
+                zoom: {value: 2},
                 points: {value: points},
                 maxIterations: {value: 20}
             },
@@ -104,13 +116,12 @@ function init() {
     {
         composer.passes[0].uniforms.time.value = time
         composer.passes[0].uniforms.points.value.forEach(element => {
-            element.influence = Math.abs(Math.sin(time/50000))
+            element.influence = (Math.cos(time/7500) + 1)/2
+            /*element.direction.rotateAround(element.position, 0.01)*/
         });
-        //[0].influence = Math.abs(Math.cos(time/5000))
+        menuManager.lblInfluence.innerHTML = `Influence: ${-(Math.cos(time/5000) - 1)/2}`
         composer.render()
     }
-
-
 
     window.addEventListener('resize', resize)
 

@@ -1,5 +1,4 @@
-*
-{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -7,15 +6,13 @@
     text-decoration: none;
 }
 
-body
-{
+body {
     overflow: hidden;
     width: 100vw;
     height: 100vh;
 }
 
-#threejs
-{
+#threejs {
     position: fixed;
     z-index: -1;
     top: 0;
@@ -25,4 +22,36 @@ body
     min-width: 100vw;
     min-height: 100vh;
     /*background-color: #202020;*/
+}
+
+#menu {
+    position: absolute;
+    top: 0;
+    right: -20vw;
+
+    width: 20vw;
+    min-width: 250px;
+    height: 100vh;
+
+    color: #aaa;
+    background-color: #202020;
+
+    transition: 500ms;
+}
+
+#menu-trigger {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    width: 2vmax;
+    min-width: 25;
+    height: 100vh;
+
+    background-color: transparent;
+}
+
+#menu-trigger:hover ~ #menu, #menu:hover{
+    right: 0;
+    transition: 1s;
 }

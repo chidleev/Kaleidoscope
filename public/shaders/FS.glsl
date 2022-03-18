@@ -1,4 +1,6 @@
 struct Point {
+    int type;
+
     vec2 position;
     vec2 direction;
 
@@ -22,9 +24,7 @@ uniform int maxIterations;
 varying vec2 pixelPosition;
 
 vec2 rotate(vec2 v, float a);
-/*float getDistance1(vec2 P, vec2 A, vec2 B);
-float getDistance2(vec2 P, vec2 A, vec2 B);
-float getDistance3(vec2 P, vec2 A, vec2 B);*/
+float getDistance(int pointIndex);
 
 void main()
 {
@@ -41,32 +41,24 @@ void main()
     
     while (haveOneTruePoint && iteration < maxIterations) {
         haveOneTruePoint = false;
-        
         for (int i = 0; i < pointsCount; i++) {
-            if (length(points[i].direction) > 0.) { //like line
-                float distanceToPoint = distance(pixelPosition, points[i].position);
+            if (getDistance(i) >= criticalDistance[i]) {
+                if (!points[i].mustBeCloser) {
+                    haveOneTruePoint = true;
+                    truePointsCount++;
+                    resultColor += points[i].color;
+                }
+                criticalDistance[i] += criticalDistance[i] * pow(points[i].influence, float(iteration + 1));
             }
-            else { //like point
-                float distanceToPoint = distance(pixelPosition, points[i].position);
-                if (distanceToPoint >= criticalDistance[i]) {
-                    if (!points[i].mustBeCloser) {
-                        haveOneTruePoint = true;
-                        truePointsCount++;
-                        resultColor += points[i].color;
-                    }
-                    criticalDistance[i] += criticalDistance[i] * pow(points[i].influence, float(iteration + 1));
+            else {
+                if (points[i].mustBeCloser) {
+                    haveOneTruePoint = true;
+                    truePointsCount++;
+                    resultColor += points[i].color;
                 }
-                else {
-                    if (points[i].mustBeCloser) {
-                        haveOneTruePoint = true;
-                        truePointsCount++;
-                        resultColor += points[i].color;
-                    }
-                    criticalDistance[i] -= criticalDistance[i] * pow(points[i].influence, float(iteration + 1));
-                }
+                criticalDistance[i] -= criticalDistance[i] * pow(points[i].influence, float(iteration + 1));
             }
         }
-
         iteration++;
     }
 
@@ -74,25 +66,25 @@ void main()
     vec4 iterationMask = vec4(float(iteration) / float(maxIterations));
     resultColor /= float(truePointsCount);
 
-
-    gl_FragColor = resultColor * (1.-criterionMask);
+    gl_FragColor = mix(resultColor, vec4(0.), criterionMask);
 }
 
-/*float getDistance1(vec2 P, vec2 A, vec2 B) {
-    return ((B.y - A.y) * P.x - (B.x - A.x) * P.y + B.x * A.y - B.y * A.x) / distance(A, B);
-}
+float getDistance(int pointIndex) {
+    if (length(points[pointIndex].direction) > 0.) {
+        if (points[pointIndex].type == 1) {
+            vec2 A = points[pointIndex].position;
+            vec2 B = points[pointIndex].position + normalize(points[pointIndex].direction);
+            return ((B.y - A.y) * pixelPosition.x - (B.x - A.x) * pixelPosition.y + B.x * A.y - B.y * A.x) / distance(A, B);
+        }
 
-float getDistance2(vec2 P, vec2 A, vec2 B) {
-    vec2 N = normalize(B - A);
-    vec2 C = A - P;
-    return length(C - dot(C, N) * N);
+        if (points[pointIndex].type == 2) {
+            vec2 N = normalize(points[pointIndex].direction);
+            vec2 C = points[pointIndex].position - pixelPosition;
+            return length(C - dot(C, N) * N);
+        }
+    }
+    return distance(pixelPosition, points[pointIndex].position);
 }
-
-float getDistance3(vec2 P, vec2 A, vec2 B) {
-    vec2 N = normalize(B - A);
-    vec2 C = dot(A - P, N) * N;
-    return length(C - P);
-}*/
 
 vec2 rotate(vec2 v, float a) {
 	float s = sin(a);
